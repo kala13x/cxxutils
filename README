@@ -1,0 +1,14 @@
+CXXUtils C++ Library release 1.x (c) Sun Dro <f4tb0y@protonmail.com>
+
+This directory contains the sources of the CXXUtils C++ Library. See 
+the file "src/cxxver.h" for what release version you have.
+
+The CXXUtils Library is the C++ library for all Linux/Unix systems, It 
+provides the functions to make some routines easier for all programs 
+written in C++. Software is written for educational purposes and is 
+distributed in the hope that it will be useful for anyone interested 
+in this field.
+
+The CXXUtils C++ Library is free software. you can redistribute it and/or 
+modify it under the terms of The MIT License (See LICENSE file for more 
+information).

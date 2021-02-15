@@ -1,0 +1,14 @@
+smake -p libcxxutils.a -o obj -e ./examples \
+    -b /usr/lib -i /usr/include/cxxutils \
+    -f '-g -O2 -Wall -D_XSOCK_USE_SSL' \
+    -l '-lpthread -lssl -lcrypto' -x
+
+export XUTILS_USE_SSL=y
+
+make clean && make -j 4
+ls obj/libcxxutils.a
+
+cd examples
+make clean
+make -j 4
+cd ..
