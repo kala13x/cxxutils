@@ -117,7 +117,7 @@ bool XSock::Check()
     return true;
 }
 
-int XSock::Create(Type eType, int nType, int nProto, int nMax, const char *pAddr, uint16_t nPort)
+int XSock::Create(XSock::Type eType, int nType, int nProto, int nMax, const char *pAddr, uint16_t nPort)
 {
     m_nAddr = htonl(INADDR_ANY);
     m_nProto = nProto;
@@ -154,7 +154,7 @@ int XSock::Create(Type eType, int nType, int nProto, int nMax, const char *pAddr
     return m_nFD;
 }
 
-XSock::XSock(Type eType, const char *pAddr, uint16_t nPort)
+XSock::XSock(XSock::Type eType, const char *pAddr, uint16_t nPort)
 {
     /* Handle socket type */
     switch(eType)
@@ -411,7 +411,7 @@ int XSock::Read(void *pData, size_t nSize)
     int nReadSize = 0;
 
 #ifdef EINTR
-    do nReadSize = read(m_nFD, pData, nLength);
+    do nReadSize = read(m_nFD, pData, nSize);
     while (nReadSize < 0 && errno == EINTR);
 #else
     nReadSize = read(m_nFD, pData, nSize);
@@ -569,9 +569,10 @@ void XSock::GetIPAddr(char *pAddr, size_t nSize)
     SinAddr(pInAddr->sin_addr, pAddr, nSize);
 }
 
-int XSock::AddrInfo(const char *pHost, Info *pInfo)
+int XSock::AddrInfo(const char *pHost, XSock::Info *pInfo)
 {
     struct addrinfo hints, *res = NULL;
+    char sAddr[XSOCK_INFO_MAX];
     void *ptr = NULL;
 
     memset(&hints, 0, sizeof (hints));
@@ -583,7 +584,7 @@ int XSock::AddrInfo(const char *pHost, Info *pInfo)
     hints.ai_next = NULL;
 
     if (getaddrinfo(pHost, NULL, &hints, &res)) return 0;
-    inet_ntop(res->ai_family, res->ai_addr->sa_data, pInfo->sAddr, sizeof(pInfo->sAddr));
+    inet_ntop(res->ai_family, res->ai_addr->sa_data, sAddr, sizeof(sAddr));
 
     switch (res->ai_family)
     {
@@ -595,23 +596,31 @@ int XSock::AddrInfo(const char *pHost, Info *pInfo)
             break;
     }
 
-    inet_ntop(res->ai_family, ptr, pInfo->sAddr, sizeof(pInfo->sAddr));
-    strncpy(pInfo->sName, res->ai_canonname, sizeof(pInfo->sName)-1);
-    pInfo->nFamily = res->ai_family == PF_INET6 ? 6 : 4;
-    freeaddrinfo(res);
+    if (ptr != NULL)
+    {
+        inet_ntop(res->ai_family, ptr, sAddr, sizeof(sAddr));
+        pInfo->sAddr = std::string(sAddr);
+    }
 
+    pInfo->sName = std::string(res->ai_canonname);
+    pInfo->nFamily = res->ai_family == PF_INET6 ? 6 : 4;
+
+    freeaddrinfo(res);
     return 1;
 }
 
-int XSock::SockAddr(Info *pInfo, struct sockaddr_in *pAddr, size_t nSize)
+int XSock::SockAddr(XSock::Info *pInfo, struct sockaddr_in *pAddr, size_t nSize)
 {
     pInfo->sName[0] = 0;
     pInfo->sAddr[0] = 0;
     pInfo->nFamily = 4;
 
     struct hostent *hinfo = gethostbyaddr((char*)&pAddr->sin_addr.s_addr, nSize, AF_INET);
-    if (hinfo != NULL) snprintf(pInfo->sName, (sizeof(pInfo->sName)-1), "%s", hinfo->h_name);
-    IPStr(pAddr->sin_addr.s_addr, pInfo->sAddr, sizeof(pInfo->sAddr));
+    if (hinfo != NULL) pInfo->sName = std::string(hinfo->h_name);
+
+    char sAddr[XSOCK_INFO_MAX];
+    IPStr(pAddr->sin_addr.s_addr, sAddr, sizeof(sAddr));
+    pInfo->sAddr = std::string(sAddr);
 
     return (hinfo != NULL) ? 1 : 0;
 }
@@ -732,7 +741,7 @@ int XSock::AddMembership(const char* pGroup)
     return m_nFD;
 }
 
-int XSock::SetSSLCert(SSLCert *pCert)
+int XSock::SetSSLCert(XSock::SSLCert *pCert)
 {
 #ifdef XSOCK_USE_SSL
     SSL_CTX_set_ecdh_auto(m_pSSLCtx, 1);

@@ -87,6 +87,7 @@ int main(int argc, char* argv[])
     XHTTP header;
     header.InitRequest(XHTTP::Method::GET, "/", NULL);
     header.AddHeader("Host", STOPCOV_ADDR);
+    header.AddHeader("User-Agent", "cxxutils");
     header.FinishAssembly();
 
     if (!header.IsComplete()) 
@@ -95,8 +96,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    XSock::Info sockInfo;
-    if (!XSock::AddrInfo(STOPCOV_ADDR, &sockInfo))
+    XSock::Info info;
+    if (!XSock::AddrInfo(STOPCOV_ADDR, &info))
     {
         printf("Can not resolve address: %s\n", STOPCOV_ADDR);
         return 0;
@@ -104,9 +105,9 @@ int main(int argc, char* argv[])
 
     XSock::InitSSL();
 
-    if (nVerbose) printf("---> Connecting to server: %s:%d\n", sockInfo.sAddr, STOPCOV_PORT);
+    if (nVerbose) printf("---> Connecting to server: %s:%d\n", info.sAddr.c_str(), STOPCOV_PORT);
 
-    XSock sock(XSock::Type::SSL_CLIENT, sockInfo.sAddr, STOPCOV_PORT);
+    XSock sock(XSock::Type::SSL_CLIENT, info.sAddr.c_str(), STOPCOV_PORT);
     if (!sock.IsOpen())
     {
         printf("%s (%s)\n", sock.ErrorStr(), strerror(errno));

@@ -18,6 +18,8 @@
 class XSHA256 
 {
 public:
+    XSHA256();
+
     void Compute(const uint8_t *pData, size_t nLength, uint8_t *pDigest);
     void Update(const uint8_t *pData, size_t nLength);
     void FinalRaw(uint8_t *pDigest);

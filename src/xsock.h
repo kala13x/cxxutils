@@ -35,6 +35,8 @@
 #define SOCK_NONBLOCK O_NONBLOCK
 #endif
 
+#include <string>
+
 /* Socket errors */
 #define XSOCK_ERR_NONE      0
 #define XSOCK_ERR_BIND      1
@@ -92,8 +94,8 @@ public:
 
     typedef struct 
     {
-        char sAddr[XSOCK_INFO_MAX] = { 0 };
-        char sName[XSOCK_INFO_MAX] = { 0 };;
+        std::string sAddr;
+        std::string sName;
         int nFamily = 0; // 4: IPv4, 6: IPv6
     } Info;
 
@@ -110,14 +112,14 @@ public:
 
     static void IPStr(const uint32_t nAddr, char *pStr, size_t nSize);
     static void SinAddr(const struct in_addr inAddr, char *pAddr, size_t nSize);
-    static int SockAddr(Info *pInfo, struct sockaddr_in *pAddr, size_t nSize);
-    static int AddrInfo(const char *pHost, Info *pInfo);
+    static int SockAddr(XSock::Info *pInfo, struct sockaddr_in *pAddr, size_t nSize);
+    static int AddrInfo(const char *pHost, XSock::Info *pInfo);
 
-    XSock(Type eType, const char *pAddr, uint16_t nPort);
+    XSock(XSock::Type eType, const char *pAddr, uint16_t nPort);
     XSock(int nFD, int nType);
     ~XSock();
 
-    int Create(Type eType, int nType, int nProto, int nMax, const char *pAddr, uint16_t nPort);
+    int Create(XSock::Type eType, int nType, int nProto, int nMax, const char *pAddr, uint16_t nPort);
     void Close();
 
     void Set(int nFd, int nType);
@@ -125,7 +127,7 @@ public:
     int SetupUDP();
     int SetupRAW();
 
-    int SetSSLCert(SSLCert *pCert);
+    int SetSSLCert(XSock::SSLCert *pCert);
     int InitSSLClient();
     int InitSSLServer();
 
@@ -157,7 +159,7 @@ public:
     int Linger(int nSec);
 
 private:
-    Type m_eType = Type::UNSET;
+    XSock::Type m_eType = Type::UNSET;
     struct sockaddr_in m_inAddr;
 
     uint32_t m_nAddr = 0;
