@@ -9,10 +9,10 @@ NAME = libcxxutils.a
 ODIR = obj
 OBJ = o
 
-OBJS = xhttp.$(OBJ) \
-	xsha256.$(OBJ) \
-	xsock.$(OBJ) \
-	xssl.$(OBJ)
+OBJS = xsock.$(OBJ) \
+	xssl.$(OBJ) \
+	xhttp.$(OBJ) \
+	xsha256.$(OBJ)
 
 OBJECTS = $(patsubst %,$(ODIR)/%,$(OBJS))
 INSTALL_BIN = /usr/lib

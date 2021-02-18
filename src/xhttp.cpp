@@ -111,7 +111,7 @@ void XHTTP::Append(const char *pData, size_t nLength)
 void XHTTP::InitRequest(Method eMethod, const char *pUrl, const char *pVer)
 {
 	m_eMethod = eMethod;
-	m_sVersion = pVer ? std::string(pVer) : std::string("1.1");
+	m_sVersion = pVer ? std::string(pVer) : std::string("1.0");
 	m_sHeaderRaw = std::string(GetMethodStr()) + std::string(" ");
 	AddHeader(NULL, "%s HTTP/%s", pUrl, m_sVersion.c_str());
 }
@@ -119,7 +119,7 @@ void XHTTP::InitRequest(Method eMethod, const char *pUrl, const char *pVer)
 void XHTTP::InitResponse(int nStatusCode, const char *pVer)
 {
 	m_nStatusCode = nStatusCode;
-	m_sVersion = pVer ? std::string(pVer) : std::string("1.1");
+	m_sVersion = pVer ? std::string(pVer) : std::string("1.0");
 	m_sHeaderRaw = std::string("HTTP/") + m_sVersion;
 	AddHeader(NULL, " %d %s", m_nStatusCode, GetCodeStr(m_nStatusCode));
 }

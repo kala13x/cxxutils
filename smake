@@ -7,8 +7,3 @@ export XUTILS_USE_SSL=y
 
 make clean && make -j 4
 ls obj/libcxxutils.a
-
-cd examples
-make clean
-make -j 4
-cd ..

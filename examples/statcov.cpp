@@ -8,6 +8,7 @@
 
 #include <cxxutils/xsock.h>
 #include <cxxutils/xhttp.h>
+#include <cxxutils/xssl.h>
 
 #define STOPCOV_ADDR        "stopcov.ge"
 #define STOPCOV_PORT        443
@@ -37,15 +38,15 @@ int COVID_ParseCase(const char *pSource, const char *pCase)
     return -1;
 }
 
-int COVID_GetCases(XSock *pSock, const char *pRequest, COVIDCases *pCovCases)
+int COVID_GetCases(XSSL *pSSL, const char *pRequest, COVIDCases *pCovCases)
 {
     char sResponse[XSOCK_BUFF_SIZE];
     int nBytes = 0;
 
-    pSock->Write((void*)pRequest, strlen(pRequest));
+    pSSL->Write((const uint8_t*)pRequest, strlen(pRequest));
     memset(pCovCases, 0, sizeof(COVIDCases));
 
-    while ((nBytes = pSock->Read(sResponse, sizeof(sResponse))) > 0)
+    while ((nBytes = pSSL->Read((uint8_t*)sResponse, sizeof(sResponse), false)) > 0)
     {
         sResponse[nBytes] = '\0';
 
@@ -103,25 +104,28 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    XSock::InitSSL();
-
     if (nVerbose) printf("---> Connecting to server: %s:%d\n", info.sAddr.c_str(), STOPCOV_PORT);
 
-    XSock sock(XSock::Type::SSL_CLIENT, info.sAddr.c_str(), STOPCOV_PORT);
-    if (!sock.IsOpen())
+    XSSL::GlobalInit();
+    XSSL ssl(XSSL::Type::client, info.sAddr.c_str(), STOPCOV_PORT, NULL);
+
+    if (ssl.GetFD() < 0)
     {
-        printf("%s (%s)\n", sock.ErrorStr(), strerror(errno));
+        printf("%s\n", ssl.GetLastError().c_str());
         return 0;
     }
 
     if (nVerbose) printf("---> Sending request:\n\n%s\n", header.GetData());
 
     COVIDCases covCases;
-    int nStatus = COVID_GetCases(&sock, header.GetData(), &covCases);
+    int nStatus = COVID_GetCases(&ssl, header.GetData(), &covCases);
 
     if (nStatus) COVID_PrintCases(&covCases);
-    else printf("%s\n", sock.ErrorStr());
+    else printf("%s\n", ssl.GetLastError().c_str());
 
-    XSock::DeinitSSL();
+    ssl.Shutdown();
+    XSSL::GlobalDestroy();
+
+    /* Thats all */
     return 0;
 }

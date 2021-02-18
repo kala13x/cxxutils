@@ -19,22 +19,8 @@
 class XSSL
 {
 public:
-    XSSL()
+    struct Cert 
     {
-        m_pSSLCtx = nullptr;
-        m_pSSL = nullptr;
-        m_pCert = nullptr;
-        m_pKey = nullptr;
-        m_pCa = nullptr;
-        m_nSock = -1;
-    }
-
-    ~XSSL()
-    {
-        Shutdown(); 
-    }
-
-    struct XSSLCert {
         int nVerifyFlags = SSL_VERIFY_PEER;
         const char *pCertPath = nullptr;
         const char *pKeyPath = nullptr;
@@ -43,35 +29,49 @@ public:
         const char *p12Pass = nullptr;
     };
 
-    bool InitServer(const char *pAddr, uint16_t nPort, XSSLCert *pCert);
-    bool InitClient(const char *pAddr, uint16_t nPort, XSSLCert *pCert);
+    enum class Type 
+    {
+        undef = 0,
+        server,
+        client
+    };
+
+    static void GlobalInit();
+    static void GlobalDestroy();
+
+    XSSL() {};
+    ~XSSL() { Shutdown(); }
+
+    XSSL(XSSL::Type eType, const char *pAddr, uint16_t nPort, XSSL::Cert *pCert);
+    bool InitServer(const char *pAddr, uint16_t nPort, XSSL::Cert *pCert);
+    bool InitClient(const char *pAddr, uint16_t nPort, XSSL::Cert *pCert);
 
     bool LoadPKCS12(const char *p12Path, const char *p12Pass);
-    bool CheckCertificate();
+    bool GetPeerCert(std::string &sSubject, std::string &sIssuer);
 
-    bool Read(uint8_t *pBuffer, int nSize);
-    bool Write(uint8_t *pBuffer, int nLength);
+    int Read(uint8_t *pBuffer, int nSize, bool bExact);
+    int Write(const uint8_t *pBuffer, int nLength);
 
-    std::string GetError();
     XSSL* Accept();
     void Shutdown();
 
-    inline SSL* GetSSL() { return m_pSSL; }
-    inline void SetSSL(SSL *pSSL) { m_pSSL = pSSL; }
-    inline void SetFD(int nFD) { SSL_set_fd(m_pSSL, nFD); m_nSock = nFD; }
-    inline int GetFD() { return m_nSock; }
+    SSL* GetSSL() { return m_pSSL; }
+    void SetSSL(SSL *pSSL) { m_pSSL = pSSL; }
+    void SetFD(int nFD) { SSL_set_fd(m_pSSL, nFD); m_nSock = nFD; }
+    int GetFD() { return m_nSock; }
+
+    std::string GetLastError();
+    std::string GetSSLError();
 
 protected:
-    SSL_CTX *m_pSSLCtx;
-    SSL *m_pSSL;
-    int m_nSock;
+    std::string m_sError;
+    SSL_CTX *m_pSSLCtx = nullptr;
+    SSL *m_pSSL = nullptr;
+    int m_nSock = -1;
 
-    STACK_OF(X509) *m_pCa;
-    EVP_PKEY *m_pKey;
-    X509 *m_pCert;
+    STACK_OF(X509) *m_pCa = nullptr;
+    EVP_PKEY *m_pKey = nullptr;
+    X509 *m_pCert = nullptr;
 };
-
-void XSSL_GlobalInit(int nVerbose);
-void XSSL_GlobalDestroy();
 
 #endif /* __CXXUTILS_XSSL_H__ */
