@@ -9,14 +9,15 @@ NAME = libcxxutils.a
 ODIR = obj
 OBJ = o
 
-OBJS = xsock.$(OBJ) \
+OBJS = xhttp.$(OBJ) \
+	xsha256.$(OBJ) \
+	xsock.$(OBJ) \
 	xssl.$(OBJ) \
-	xhttp.$(OBJ) \
-	xsha256.$(OBJ)
+	xevent.$(OBJ)
 
 OBJECTS = $(patsubst %,$(ODIR)/%,$(OBJS))
-INSTALL_BIN = /usr/lib
 INSTALL_INC = /usr/include/cxxutils
+INSTALL_BIN = /usr/lib
 VPATH = ./src
 
 .cpp.$(OBJ):
