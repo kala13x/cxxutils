@@ -2,9 +2,11 @@
  *  cxxutils/src/xevent.cpp
  * 
  *  Copyleft (C) 2020  Sun Dro (f4tb0y@protonmail.com)
- *  Implementation of async events based on EPOLL
+ *  Implementation of async event engine based on EPOLL
  */
 
+#include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "xevent.h"
 
@@ -25,39 +27,29 @@ XEvents::~XEvents()
     m_eventCallback(this, NULL, XEVENT_DESTROY);
 }
 
-std::string XEvents::GetLastError()
+const char* XEvents::GetLastError()
 {
-    const char *pStatus;
-
     switch(m_eStatus)
     {
         case Status::ECTL:
-            pStatus = "Failed to call epoll_ctl()";
-            break;
+            return "Failed to call epoll_ctl()";
         case Status::EWAIT:
-            pStatus = "Failed to call epoll_wait()";
-            break;
+            return "Failed to call epoll_wait()";
         case Status::ENOCB:
-            pStatus = "Servise callback is not set up";
-            break;
+            return "Servise callback is not set up";
         case Status::EOMAX:
-            pStatus = "Unable to detect max file descriptors";
-            break;
+            return "Unable to detect max file descriptors";
         case Status::EALLOC:
-            pStatus = "Can not allocate memory for event array";
-            break;
+            return "Can not allocate memory for event array";
         case Status::ECREATE:
-            pStatus = "Can not create event instance";
-            break;
+            return "Can not create epoll event instance";
         case Status::SUCCESS:
-            pStatus = "Success";
-            break;
+            return "Success";
         default:
-            pStatus = "Undefined";
             break;
     }
 
-    return std::string(pStatus);
+    return "Undefined";
 }
 
 bool XEvents::Create(size_t nMax, void *pUser, XEventCallback callBack)
@@ -91,7 +83,7 @@ bool XEvents::Create(size_t nMax, void *pUser, XEventCallback callBack)
         return false;
     }
 
-    /* Create event epoll instance */
+    /* Create epoll event instance */
     m_nEventFd = epoll_create1(0);
 
     /* Failed to create epoll */

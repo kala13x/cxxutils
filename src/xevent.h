@@ -2,7 +2,7 @@
  *  cxxutils/src/xevent.h
  * 
  *  Copyleft (C) 2020  Sun Dro (f4tb0y@protonmail.com)
- *  Implementation of async events based on EPOLL
+ *  Implementation of async event engine based on EPOLL
  */
 
 #ifndef __CXXUTILS_XEVENT_H__
@@ -10,7 +10,6 @@
 
 #include <sys/epoll.h>
 #include <stdint.h>
-#include <string>
 
 #define XEVENT_ERROR             1
 #define XEVENT_USER              2
@@ -58,7 +57,7 @@ public:
     void ServiceCallback(XEventData *pData);
     void ClearCallback(XEventData *pEvData);
 
-    std::string GetLastError();
+    const char* GetLastError();
     void *GetsUserData() { return m_pUserSpace; }
 
 private:
