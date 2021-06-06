@@ -186,15 +186,13 @@ bool XEvents::Modify(XEventData *pData, int nEvents)
 
 bool XEvents::Delete(XEventData *pData)
 {
-    int nEFD = pData->fd;
-    this->ClearCallback(pData);
-
-    if (epoll_ctl(m_nEventFd, EPOLL_CTL_DEL, nEFD, NULL) < 0)
+    if (pData->fd >= 0 && epoll_ctl(m_nEventFd, EPOLL_CTL_DEL, pData->fd, NULL) < 0)
     {
         m_eStatus = Status::ECTL;
         return false;
     }
 
+    this->ClearCallback(pData);
     m_eStatus = Status::SUCCESS;
     return true;
 }

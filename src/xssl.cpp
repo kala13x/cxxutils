@@ -366,7 +366,7 @@ XSSL* XSSL::Accept()
     {
         m_sError = "Can not accept to the SSL (TCP) socket";
         delete pClientSSL;
-        return nullptr;;
+        return nullptr;
     }
 
     pClientSSL->SetSSL(SSL_new(m_pSSLCtx));
