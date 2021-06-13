@@ -31,8 +31,12 @@ const char* XEvents::GetLastError()
 {
     switch(m_eStatus)
     {
-        case Status::ECTL:
-            return "Failed to call epoll_ctl()";
+        case Status::EADD:
+            return "epoll_ctl() ADD failed";
+        case Status::EMOD:
+            return "epoll_ctl() MOD failed";
+        case Status::EDEL:
+            return "epoll_ctl() DEL failed";
         case Status::EWAIT:
             return "Failed to call epoll_wait()";
         case Status::ENOCB:
@@ -160,7 +164,7 @@ bool XEvents::Add(XEventData *pData, int nEvents)
 
     if (epoll_ctl(m_nEventFd, EPOLL_CTL_ADD, pData->fd, &event) < 0)
     {
-        m_eStatus = Status::ECTL;
+        m_eStatus = Status::EADD;
         return false;
     }
 
@@ -176,7 +180,7 @@ bool XEvents::Modify(XEventData *pData, int nEvents)
 
     if (epoll_ctl(m_nEventFd, EPOLL_CTL_MOD, pData->fd, &event) < 0)
     {
-        m_eStatus = Status::ECTL;
+        m_eStatus = Status::EMOD;
         return false;
     }
 
@@ -186,15 +190,14 @@ bool XEvents::Modify(XEventData *pData, int nEvents)
 
 bool XEvents::Delete(XEventData *pData)
 {
-    if (pData->fd >= 0 && epoll_ctl(m_nEventFd, EPOLL_CTL_DEL, pData->fd, NULL) < 0)
-    {
-        m_eStatus = Status::ECTL;
-        return false;
-    }
+    m_eStatus = Status::SUCCESS;
+
+    if (pData->fd >= 0 && 
+        epoll_ctl(m_nEventFd, EPOLL_CTL_DEL, pData->fd, NULL) < 0) 
+            m_eStatus = Status::EDEL;
 
     this->ClearCallback(pData);
-    m_eStatus = Status::SUCCESS;
-    return true;
+    return (m_eStatus == Status::SUCCESS);
 }
 
 bool XEvents::Service(int nTimeoutMs)

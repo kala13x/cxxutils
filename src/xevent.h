@@ -37,7 +37,9 @@ public:
 
     enum Status {
         NONE = 0,
-        ECTL,
+        EDEL,
+        EMOD,
+        EADD,
         EWAIT,
         ENOCB,
         EOMAX,
