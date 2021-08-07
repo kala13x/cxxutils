@@ -13,7 +13,9 @@ OBJS = xhttp.$(OBJ) \
 	xsha256.$(OBJ) \
 	xsock.$(OBJ) \
 	xssl.$(OBJ) \
-	xevent.$(OBJ)
+	xevent.$(OBJ) \
+	xstats.$(OBJ) \
+	xlog.$(OBJ)
 
 OBJECTS = $(patsubst %,$(ODIR)/%,$(OBJS))
 INSTALL_INC = /usr/include/cxxutils
